@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenshot Viewer - Course QA Assistant</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: white;
+    }
+
+    .title-group h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .title-group span {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #1e293b;
+      color: #f8fafc;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+
+    .btn:hover {
+      background: #334155;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #3b82f6;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    /* Metadata Bar */
+    .metadata-bar {
+      background: #111827;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .type-badge.automatic {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .type-badge.manual {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+
+    /* Main Viewport */
+    main {
+      flex: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-container {
+      max-width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #000;
+    }
+
+    .image-container img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 200px);
+      object-fit: contain;
+    }
+
+    .loading-state, .error-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+
+    .error-state {
+      color: #f87171;
+    }
+
+    /* Extracted Text Panel */
+    .text-panel {
+      width: 100%;
+      max-width: 960px;
+      margin-top: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .text-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(30, 41, 59, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .text-panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .text-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .text-status-badge {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .text-status-badge.completed {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .text-status-badge.partially-completed {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .text-status-badge.failed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .text-status-badge.pending, .text-status-badge.extracting, .text-status-badge.not-yet-available {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .text-content {
+      padding: 16px 18px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 60px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .text-content.empty {
+      color: #475569;
+      font-style: italic;
+    }
+
+    .text-panel-footer {
+      padding: 8px 18px;
+      font-size: 10px;
+      color: #475569;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 16px;
+    }
+
+    /* Stage 6: Analysis Findings Panel */
+    .analysis-panel {
+      width: 100%;
+      max-width: 960px;
+      margin-top: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .analysis-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(30, 41, 59, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .analysis-panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .analysis-count-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .analysis-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .analysis-status-badge {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .analysis-status-badge.completed {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .analysis-status-badge.analyzing {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .analysis-status-badge.pending {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .analysis-status-badge.skipped {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .analysis-status-badge.failed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-retry-analysis {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-retry-analysis:hover {
+      background: #334155;
+    }
+
+    .analysis-findings-body {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .finding-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .finding-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .finding-cat-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .finding-cat-badge.spelling {
+      background: rgba(244, 63, 94, 0.18);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    .finding-cat-badge.grammar {
+      background: rgba(168, 85, 247, 0.18);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+
+    .finding-cat-badge.repeated-word {
+      background: rgba(249, 115, 22, 0.18);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+    }
+
+    .finding-cat-badge.punctuation {
+      background: rgba(234, 179, 8, 0.18);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+
+    .finding-cat-badge.capitalization {
+      background: rgba(6, 182, 212, 0.18);
+      color: #22d3ee;
+      border: 1px solid rgba(6, 182, 212, 0.35);
+    }
+
+    .finding-severity {
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .finding-content {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .finding-original {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border-radius: 4px;
+      padding: 2px 6px;
+      text-decoration: line-through;
+    }
+
+    .finding-message {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .finding-suggestions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
+    .suggestion-label {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .suggestion-pill {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .analysis-clean-state {
+      text-align: center;
+      padding: 24px;
+      color: #34d399;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .analysis-empty {
+      text-align: center;
+      padding: 24px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    /* Multi-Slide Navigation Controls */
+    .slide-nav-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 3px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-nav {
+      padding: 5px 10px;
+      font-size: 12px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-nav:hover:not(:disabled) {
+      background: #334155;
+    }
+    .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .slide-counter-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    /* Session Slides Filmstrip */
+    .slides-strip-container {
+      background: #0b111e;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 24px;
+    }
+
+    .strip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .strip-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .strip-hint {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .slides-strip {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0b111e;
+    }
+
+    .slide-tab {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      background: #151e2e;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .slide-tab:hover {
+      background: #1e293b;
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .slide-tab.active {
+      background: rgba(37, 99, 235, 0.22);
+      border-color: #3b82f6;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .slide-tab-num {
+      font-size: 12px;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border-radius: 5px;
+      padding: 2px 6px;
+    }
+
+    .slide-tab-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .slide-tab-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2e8f0;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow ellipsis;
+      white-space: nowrap;
+    }
+
+    .slide-tab-meta {
+      font-size: 10px;
+      color: #64748b;
+      display: flex;
+      gap: 6px;
+    }
+
+    .slide-tab.active .slide-tab-title {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">QA</div>
+      <div class="title-group">
+        <h1>Captured Slide Viewport</h1>
+        <span id="page-source">Course QA Assistant • Stage 2 Real Capture</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Multi-Slide Navigator -->
+      <div class="slide-nav-group" id="slide-nav-group" style="display: none;">
+        <button class="btn btn-nav" id="btn-prev-slide" title="Previous Slide (←)">◀ Prev</button>
+        <span class="slide-counter-badge" id="slide-counter-badge">Slide 1 of 1</span>
+        <button class="btn btn-nav" id="btn-next-slide" title="Next Slide (→)">Next ▶</button>
+      </div>
+
+      <button class="btn" id="btn-copy-id">📋 Copy ID</button>
+      <button class="btn btn-primary" id="btn-download">💾 Download PNG</button>
+    </div>
+  </header>
+
+  <div class="metadata-bar">
+    <div class="meta-item">
+      <span class="meta-label">Capture ID</span>
+      <span class="meta-value" id="val-capture-id">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Session ID</span>
+      <span class="meta-value" id="val-session-id">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Slide / Capture #</span>
+      <span class="meta-value" id="val-capture-num">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Capture Type</span>
+      <span class="meta-value" id="val-capture-type">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Timestamp</span>
+      <span class="meta-value" id="val-timestamp">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Resolution</span>
+      <span class="meta-value" id="val-resolution">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Image Size</span>
+      <span class="meta-value" id="val-size">-</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Analysis Status</span>
+      <span class="meta-value"><span class="status-badge" id="val-status">pending</span></span>
+    </div>
+  </div>
+
+  <!-- Session Slides Strip -->
+  <div class="slides-strip-container" id="slides-strip-container" style="display: none;">
+    <div class="strip-header">
+      <span class="strip-title">🎞️ All Captures in Session (<span id="strip-count">0</span>)</span>
+      <span class="strip-hint">Click any slide to view its screenshot & extracted text • Keyboard: [ ← ] Prev / [ → ] Next</span>
+    </div>
+    <div class="slides-strip" id="slides-strip">
+      <!-- Generated slide cards -->
+    </div>
+  </div>
+
+  <main>
+    <div class="image-container" id="img-wrapper">
+      <div class="loading-state" id="loading-view">Loading high-resolution screenshot from IndexedDB...</div>
+      <img id="screenshot-img" style="display: none;" alt="Captured course screenshot" />
+    </div>
+
+    <!-- Stage 4: Extracted Text Panel -->
+    <div class="text-panel" id="text-panel">
+      <div class="text-panel-header">
+        <span class="text-panel-title">📝 Extracted Text</span>
+        <div class="text-meta">
+          <span id="val-word-count">– words</span>
+          <span id="val-extract-method">–</span>
+          <span class="text-status-badge pending" id="val-extract-status">Loading…</span>
+        </div>
+      </div>
+      <div class="text-content empty" id="text-content-body">Loading extracted text…</div>
+      <div class="text-panel-footer">
+        <span id="val-extract-ts">–</span>
+        <span id="val-extract-notes"></span>
+      </div>
+    </div>
+
+    <!-- Stage 6: Grammar & Spelling Analysis Panel -->
+    <div class="analysis-panel" id="analysis-panel">
+      <div class="analysis-panel-header">
+        <div class="analysis-panel-title">
+          <span>🔍 Grammar & Spelling Findings</span>
+          <span class="analysis-count-badge" id="val-analysis-count">0 issues</span>
+        </div>
+        <div class="analysis-meta">
+          <span class="analysis-status-badge pending" id="val-analysis-status">PENDING</span>
+          <button class="btn-retry-analysis" id="btn-retry-analysis" title="Re-run language analysis for this slide">🔄 Re-analyze</button>
+        </div>
+      </div>
+      <div class="analysis-findings-body" id="analysis-findings-body">
+        <div class="analysis-empty" id="analysis-empty-state">Loading analysis findings…</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="viewer.js"></script>
+</body>
+</html>

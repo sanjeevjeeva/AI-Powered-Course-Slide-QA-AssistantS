@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course QA Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="brand">
+        <div class="logo">QA</div>
+        <div class="title-group">
+          <h1>Course QA Assistant</h1>
+          <span class="subtitle">Real-time Course QA</span>
+        </div>
+      </div>
+      <div class="status-indicator" id="status-pill">
+        <span class="dot"></span>
+        <span id="status-label">Ready</span>
+      </div>
+    </header>
+
+    <div class="session-card" id="session-card">
+      <div class="session-label">CURRENT SESSION</div>
+      <div class="session-id" id="session-id">No active session</div>
+      
+      <div class="metrics-row">
+        <div class="metric">
+          <span class="metric-num" id="popup-captured">0</span>
+          <span class="metric-name">Captured</span>
+        </div>
+        <div class="metric">
+          <span class="metric-num" id="popup-analyzing">0</span>
+          <span class="metric-name">Analyzing</span>
+        </div>
+        <div class="metric">
+          <span class="metric-num" id="popup-issues">0</span>
+          <span class="metric-name">Issues</span>
+        </div>
+      </div>
+
+      <button class="btn-view-shot" id="btn-popup-view-latest" style="display: none;">
+        <span>↗</span> Inspect Latest Screenshot
+      </button>
+
+      <!-- All Captured Slides in Session -->
+      <div class="captured-slides-section" id="captured-slides-section" style="display: none;">
+        <div class="section-title">
+          <span>ALL CAPTURED SLIDES (<span id="slides-count-label">0</span>)</span>
+        </div>
+        <div class="slides-list" id="slides-list">
+          <!-- Populated by popup.js -->
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-section">
+      <div class="toggle-row">
+        <span>Show Floating Widget</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-widget" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <footer class="popup-footer">
+      <span>v1.0.0 • Stage 2 Real Capture Active</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
